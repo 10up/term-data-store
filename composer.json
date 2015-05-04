@@ -1,0 +1,13 @@
+{
+    "name": "10up/term-data-store",
+    "description": "One-to-one relationships between posts and terms",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "John P Bloch",
+            "email": "john.bloch@10up.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
