@@ -10,7 +10,10 @@
  */
 namespace TDS;
 
-class Invalid_Input_Exception extends \Exception {
+class General_Exception extends \Exception {
+}
+
+class Invalid_Input_Exception extends General_Exception {
 }
 
 /**
@@ -193,7 +196,7 @@ function get_save_post_hook( $post_type, $taxonomy ) {
 		{
 			$term = wp_insert_term( $post->post_title, $taxonomy, array( 'slug' => $post->post_name ) );
 			if( is_wp_error( $term ) ) {
-				throw new \TC\General_Exception( 'Error creating a term: ' . implode( ', ', $term->get_error_messages() ) . ' Slug: ' . $post->post_name . ' / Title: ' . $post->post_title );
+				throw new General_Exception( 'Error creating a term: ' . implode( ', ', $term->get_error_messages() ) . ' Slug: ' . $post->post_name . ' / Title: ' . $post->post_title );
 			}
 		}
 		
