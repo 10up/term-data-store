@@ -184,7 +184,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		if ( isset( $existing_closures[$md5] ) ) {
 			return $existing_closures[$md5];
 		}
-	
+
 		$closure = function ( $post_id, $post ) use ( $post_type, $taxonomy ) {
 			if ( apply_filters( 'tds_balancing_from_post', balancing_relationship(), $post_type, $taxonomy, $post ) ) {
 				return;
@@ -193,7 +193,13 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 				return;
 			}
 			balancing_relationship( true );
-			$term = wpcom_vip_get_term_by( 'slug', $post->post_name, $taxonomy, ARRAY_A );
+
+			if ( function_exists( 'wpcom_vip_get_term_by' ) ) {
+				$term = wpcom_vip_get_term_by( 'slug', $post->post_name, $taxonomy, ARRAY_A );
+			} else {
+				$term = get_term_by( 'slug', $post->post_name, $taxonomy, ARRAY_A );
+			}
+		
 			if( !$term )
 			{
 				$term = wp_insert_term( $post->post_title, $taxonomy, array( 'slug' => $post->post_name ) );
