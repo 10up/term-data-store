@@ -72,7 +72,9 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		unset( $post_type_relationships, $taxonomy_relationships );
 	
 		add_action( 'save_post', get_save_post_hook( $post_type, $taxonomy ), 10, 2 );
-		add_action( 'create_' . $taxonomy, get_create_term_hook( $post_type, $taxonomy ) );
+		add_action( 'create_' . $taxonomy, get_save_term_hook( $post_type, $taxonomy ) );
+		add_action( 'edit_term', get_save_term_hook( $post_type, $taxonomy ) );
+
 		get_relationship( $post_type, $taxonomy );
 	
 	}
@@ -255,7 +257,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 *
 	 * @return \Closure The callback
 	 */
-	function get_create_term_hook( $post_type, $taxonomy ) {
+	function get_save_term_hook( $post_type, $taxonomy ) {
 	
 		static $existing_closures;
 		if ( ! isset( $existing_closures ) ) {
@@ -276,7 +278,20 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			}
 			balancing_relationship( true );
 			$term_objects = get_objects_in_term( $term_id, $taxonomy );
-			if ( empty( $term_objects ) ) {
+
+			$create_post = true;
+
+			// Check to see if any of the objects are of our post type
+			if ( ! empty( $term_objects ) ) {
+				foreach ( $term_objects as $term_object ) {
+					if ( $post_type === get_post_type( $term_object ) ) {
+						$create_post = false;
+						break;
+					}
+				}
+			}
+
+			if ( empty( $term_objects ) || $create_post ) {
 				$term    = get_term( $term_id, $taxonomy );
 				$post_id = wp_insert_post( array(
 					'post_type' => $post_type
@@ -293,7 +308,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		return $closure;
 	
 	}
-	
+
 	/**
 	 * Takes a term object and returns a post object related to it
 	 *
@@ -340,7 +355,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 				'no_found_rows'       => true
 			) );
 		}
-	
+
 		return $posts->post_count == 0 ? null : $posts->post;
 	}
 	
