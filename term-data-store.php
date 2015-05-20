@@ -191,7 +191,13 @@ function get_save_post_hook( $post_type, $taxonomy ) {
 			return;
 		}
 		balancing_relationship( true );
-		$term = wpcom_vip_get_term_by( 'slug', $post->post_name, $taxonomy, ARRAY_A );
+
+		if ( function_exists( 'wpcom_vip_get_term_by' ) ) {
+			$term = wpcom_vip_get_term_by( 'slug', $post->post_name, $taxonomy, ARRAY_A );
+		} else {
+			$term = get_term_by( 'slug', $post->post_name, $taxonomy, ARRAY_A );
+		}
+		
 		if( !$term )
 		{
 			$term = wp_insert_term( $post->post_title, $taxonomy, array( 'slug' => $post->post_name ) );
