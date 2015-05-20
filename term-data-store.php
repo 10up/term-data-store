@@ -10,7 +10,7 @@
  */
 namespace TDS;
 
-if ( ! function_exists( '\TDS\add_relationship' ) ) :
+if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	
 	class General_Exception extends \Exception {
 	}
@@ -375,4 +375,4 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) :
 	
 	}
 
-endif;
+}
