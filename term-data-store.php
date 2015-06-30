@@ -290,9 +290,15 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 					}
 				}
 			}
+			
+			$term = get_term( $term_id, $taxonomy );
 
-			if ( empty( $term_objects ) || $create_post ) {
-				$term    = get_term( $term_id, $taxonomy );
+			// If no terms were found, then don't create a post
+			if ( empty( $term ) ) {
+				$create_post = false;
+			}
+
+			if ( true === $create_post ) {
 				$post_id = wp_insert_post( array(
 					'post_type' => $post_type
 				, 'post_title'  => $term->name
