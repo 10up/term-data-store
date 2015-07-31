@@ -90,6 +90,8 @@ class AddRelationshipTest extends TestCase {
 		add_relationship( $post_type, $taxonomy );
 
 		$this->assertConditionsMet();
+		$this->assertEquals( $post_type, get_relationship( $taxonomy ) );
+		$this->assertEquals( $taxonomy, get_relationship( $post_type ) );
 	}
 
 }
