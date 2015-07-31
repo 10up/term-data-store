@@ -41,4 +41,42 @@ class SavePostCallbackTest extends TestCase {
 		$this->assertConditionsMet();
 	}
 
+	public function test_callback_noop_on_empty_post() {
+		WP_Mock::userFunction( 'wp_set_object_terms', array( 'times' => 0 ) );
+		call_user_func( get_save_post_hook( 'foo', 'bar' ), 1, null );
+		$this->assertConditionsMet();
+	}
+
+	public function test_callback_noop_on_wrong_post_type() {
+		WP_Mock::userFunction( 'wp_set_object_terms', array( 'times' => 0 ) );
+		$post = (object) array( 'ID' => 1, 'post_type' => 'post' );
+		call_user_func( get_save_post_hook( 'foo', 'bar' ), $post->ID, $post );
+		$this->assertConditionsMet();
+	}
+
+	public function test_callback_noop_on_wrong_status() {
+		WP_Mock::userFunction( 'wp_set_object_terms', array( 'times' => 0 ) );
+		$post = (object) array( 'ID' => 1, 'post_type' => 'post', 'post_status' => 'draft' );
+		call_user_func( get_save_post_hook( 'post', 'bar' ), $post->ID, $post );
+		$this->assertConditionsMet();
+	}
+
+	public function test_callback_noop_on_term_exists() {
+		WP_Mock::userFunction( 'wp_set_object_terms', array( 'times' => 0 ) );
+		$post = (object) array( 'ID' => 1, 'post_type' => 'post', 'post_status' => 'publish' );
+		WP_Mock::userFunction( 'get_the_terms', array(
+			'times'  => 1,
+			'args'   => array( 1, 'category' ),
+			'return' => array(
+				(object) array(
+					'term_id' => 2,
+					'name'    => 'Cat',
+					'slug'    => 'cat',
+				)
+			)
+		) );
+		call_user_func( get_save_post_hook( 'post', 'category' ), $post->ID, $post );
+		$this->assertConditionsMet();
+	}
+
 }
