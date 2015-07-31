@@ -71,4 +71,25 @@ class AddRelationshipTest extends TestCase {
 		add_relationship( $post_type, $taxonomy );
 	}
 
+	public function test_add_relationship() {
+		$post_type = 'post' . rand( 0, 9 );
+		$taxonomy  = 'post_tag' . rand( 0, 9 );
+		WP_Mock::userFunction( 'get_post_type_object', array(
+			'times'  => 1,
+			'args'   => array( $post_type ),
+			'return' => (object) array( 'name' => $post_type ),
+		) );
+		WP_Mock::userFunction( 'get_taxonomy', array(
+			'times'  => 1,
+			'args'   => array( $taxonomy ),
+			'return' => (object) array( 'name' => $taxonomy ),
+		) );
+		WP_Mock::expectActionAdded( 'save_post', get_save_post_hook( $post_type, $taxonomy ), 10, 2 );
+		WP_Mock::expectActionAdded( "create_$taxonomy", get_create_term_hook( $post_type, $taxonomy ) );
+
+		add_relationship( $post_type, $taxonomy );
+
+		$this->assertConditionsMet();
+	}
+
 }
