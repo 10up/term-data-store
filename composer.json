@@ -16,5 +16,10 @@
     },
     "autoload": {
         "files": ["term-data-store.php"]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TDS\\Tools\\": "tests/Tools"
+        }
     }
 }
