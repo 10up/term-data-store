@@ -40,4 +40,17 @@ class AddRelationshipTest extends TestCase {
 		add_relationship( $post_type, $taxonomy );
 	}
 
+	/**
+	 * @expectedException \TDS\Invalid_Input_Exception
+	 * @expectedExceptionMessage TDS\add_relationship() post_type and taxonomy already have relationships.
+	 */
+	public function test_add_relationship_both_already_paired() {
+		$post_type = 'post' . rand( 0, 9 );
+		$taxonomy  = 'post_tag' . rand( 0, 9 );
+		get_relationship( $post_type, $taxonomy );
+		WP_Mock::userFunction( 'get_post_type_object', array( 'return' => (object) array( 'name' => $post_type ) ) );
+		WP_Mock::userFunction( 'get_taxonomy', array( 'return' => (object) array( 'name' => $taxonomy ) ) );
+		add_relationship( $post_type, $taxonomy );
+	}
+
 }
