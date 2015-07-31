@@ -9,7 +9,11 @@
         }
     ],
     "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {},
+    "require-dev": {
+        "10up/wp_mock": "1.0.x@dev"
+    },
     "autoload": {
         "files": ["term-data-store.php"]
     }
