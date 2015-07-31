@@ -3,6 +3,7 @@
 namespace TDS;
 
 use TDS\Tools\TestCase;
+use WP_Mock;
 
 /**
  * @runTestsInSeparateProcesses
@@ -15,7 +16,7 @@ class AddRelationshipTest extends TestCase {
 	 */
 	public function test_add_relationship_invalid_post_type() {
 		$post_type = 'post' . rand( 0, 9 );
-		\WP_Mock::userFunction( 'get_post_type_object', array(
+		WP_Mock::userFunction( 'get_post_type_object', array(
 			'times'  => 1,
 			'args'   => array( $post_type ),
 			'return' => null,
@@ -30,8 +31,8 @@ class AddRelationshipTest extends TestCase {
 	public function test_add_relationship_invalid_taxonomy() {
 		$post_type = 'post' . rand( 0, 9 );
 		$taxonomy  = 'post_tag' . rand( 0, 9 );
-		\WP_Mock::userFunction( 'get_post_type_object', array( 'return' => (object) array( 'name' => $post_type ) ) );
-		\WP_Mock::userFunction( 'get_taxonomy', array(
+		WP_Mock::userFunction( 'get_post_type_object', array( 'return' => (object) array( 'name' => $post_type ) ) );
+		WP_Mock::userFunction( 'get_taxonomy', array(
 			'times'  => 1,
 			'args'   => array( $taxonomy ),
 			'return' => null,
