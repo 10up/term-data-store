@@ -68,7 +68,7 @@ EOF;
 			case 'post_type':
 				return get_save_post_hook( 'foobar', 'bazbat' );
 			case 'taxonomy':
-				return get_create_term_hook( 'foobar', 'bazbat' );
+				return get_save_term_hook( 'foobar', 'bazbat' );
 		}
 		$this->fail( 'Tried to create an invalid closure type in the Hook Getters test.' );
 	}

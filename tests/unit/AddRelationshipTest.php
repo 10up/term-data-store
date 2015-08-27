@@ -85,7 +85,7 @@ class AddRelationshipTest extends TestCase {
 			'return' => (object) array( 'name' => $taxonomy ),
 		) );
 		WP_Mock::expectActionAdded( 'save_post', get_save_post_hook( $post_type, $taxonomy ), 10, 2 );
-		WP_Mock::expectActionAdded( "create_$taxonomy", get_create_term_hook( $post_type, $taxonomy ) );
+		WP_Mock::expectActionAdded( "create_$taxonomy", get_save_term_hook( $post_type, $taxonomy ) );
 
 		add_relationship( $post_type, $taxonomy );
 
