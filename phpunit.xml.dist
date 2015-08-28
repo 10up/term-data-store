@@ -9,4 +9,9 @@
 			<directory>tests/unit</directory>
 		</testsuite>
 	</testsuites>
+	<filter>
+		<whitelist>
+			<file>term-data-store.php</file>
+		</whitelist>
+	</filter>
 </phpunit>
