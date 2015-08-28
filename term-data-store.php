@@ -345,7 +345,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		if ( empty( $post_type ) ) {
 			return null;
 		}
-		
+
 		$posts = new \WP_Query( array(
 			'post_type'           => $post_type,
 			'posts_per_page'      => 1,

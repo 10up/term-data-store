@@ -39,4 +39,14 @@ class GetRelatedPostTest extends TestCase {
 		$this->assertNull( get_related_post( $term, $term->taxonomy ) );
 	}
 
+	public function test_get_related_post_null_when_no_post_found() {
+		$term = (object) array(
+			'term_id'  => rand( 1, 9 ),
+			'taxonomy' => 'category',
+		);
+		WP_Mock::wpFunction( 'is_wp_error', array( 'return' => false ) );
+		get_relationship( 'post', 'category' );
+		$this->assertNull( get_related_post( $term, $term->taxonomy ) );
+	}
+
 }
