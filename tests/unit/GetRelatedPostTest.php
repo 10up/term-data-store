@@ -49,4 +49,36 @@ class GetRelatedPostTest extends TestCase {
 		$this->assertNull( get_related_post( $term, $term->taxonomy ) );
 	}
 
+	public function test_get_related_post() {
+		$term = (object) array(
+			'term_id'  => rand( 1, 9 ),
+			'taxonomy' => 'category',
+		);
+		WP_Mock::wpFunction( 'is_wp_error', array( 'return' => false ) );
+		get_relationship( 'post', 'category' );
+		$posts = array(
+			$this->mockPost( array( 'ID' => rand( 100, 199 ) ) ),
+			$this->mockPost( array( 'ID' => rand( 200, 299 ) ) ),
+			$this->mockPost( array( 'ID' => rand( 300, 399 ) ) ),
+			$this->mockPost( array( 'ID' => rand( 400, 499 ) ) ),
+		);
+		shuffle( $posts );
+		\WP_Query::$__posts[0] = $posts;
+		$this->assertSame( $posts[0], get_related_post( $term, $term->taxonomy ) );
+		$this->assertEquals(
+			array(
+				'post_type'           => 'post',
+				'posts_per_page'      => 1,
+				'tax_query'           => array( array(
+					'taxonomy'        => $term->taxonomy,
+					'field'           => 'id',
+					'terms'           => $term->term_id
+				) ),
+				'ignore_sticky_posts' => true,
+				'no_found_rows'       => true
+			),
+			\WP_Query::$__instances[0]->__data
+		);
+	}
+
 }
