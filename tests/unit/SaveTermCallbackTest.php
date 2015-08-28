@@ -3,6 +3,7 @@
 namespace TDS;
 
 use TDS\Tools\TestCase;
+use WP_Mock;
 
 class SaveTermCallbackTest extends TestCase {
 
@@ -17,7 +18,10 @@ class SaveTermCallbackTest extends TestCase {
 	}
 
 	public function test_callback_noop_when_balancing_tags() {
-		$this->markTestIncomplete();
+		balancing_relationship( true );
+		WP_Mock::userFunction( 'wp_set_object_terms', array( 'times' => 0 ) );
+		call_user_func( get_save_term_hook( 'foo', 'bar' ), 1 );
+		$this->assertConditionsMet();
 	}
 
 }
