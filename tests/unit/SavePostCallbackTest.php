@@ -91,28 +91,28 @@ class SavePostCallbackTest extends TestCase {
 		$term_id          = rand( 10, 99 );
 		$term_taxonomy_id = rand( 100, 199 );
 
-		WP_Mock::wpFunction( 'get_the_terms', array(
+		WP_Mock::userFunction( 'get_the_terms', array(
 			'times'  => 1,
 			'args'   => array( $post->ID, $taxonomy ),
 			'return' => array(),
 		) );
-		WP_Mock::wpFunction( 'get_term_by', array(
+		WP_Mock::userFunction( 'get_term_by', array(
 			'times'  => 1,
 			'args'   => array( 'slug', $post->post_name, $taxonomy, ARRAY_A ),
 			'return' => false,
 		) );
 		$insertTerm = compact( 'term_id', 'term_taxonomy_id' );
-		WP_Mock::wpFunction( 'wp_insert_term', array(
+		WP_Mock::userFunction( 'wp_insert_term', array(
 			'times'  => 1,
 			'args'   => array( $post->post_title, $taxonomy, array( 'slug' => $post->post_name ) ),
 			'return' => $insertTerm,
 		) );
-		WP_Mock::wpFunction( 'is_wp_error', array(
+		WP_Mock::userFunction( 'is_wp_error', array(
 			'times'  => 1,
 			'args'   => array( $insertTerm ),
 			'return' => false
 		) );
-		WP_Mock::wpFunction( 'wp_set_object_terms', array(
+		WP_Mock::userFunction( 'wp_set_object_terms', array(
 			'times' => 1,
 			'args'  => array( $post->ID, $term_id, $taxonomy ),
 		) );
@@ -140,29 +140,29 @@ class SavePostCallbackTest extends TestCase {
 		$term_id          = rand( 10, 99 );
 		$term_taxonomy_id = rand( 100, 199 );
 
-		WP_Mock::wpFunction( 'get_the_terms', array(
+		WP_Mock::userFunction( 'get_the_terms', array(
 			'times'  => 1,
 			'args'   => array( $post->ID, $taxonomy ),
 			'return' => array(),
 		) );
-		WP_Mock::wpFunction( 'get_term_by', array( 'times' => 0 ) );
-		WP_Mock::wpFunction( 'wpcom_vip_get_term_by', array(
+		WP_Mock::userFunction( 'get_term_by', array( 'times' => 0 ) );
+		WP_Mock::userFunction( 'wpcom_vip_get_term_by', array(
 			'times'  => 1,
 			'args'   => array( 'slug', $post->post_name, $taxonomy, ARRAY_A ),
 			'return' => false,
 		) );
 		$insertTerm = compact( 'term_id', 'term_taxonomy_id' );
-		WP_Mock::wpFunction( 'wp_insert_term', array(
+		WP_Mock::userFunction( 'wp_insert_term', array(
 			'times'  => 1,
 			'args'   => array( $post->post_title, $taxonomy, array( 'slug' => $post->post_name ) ),
 			'return' => $insertTerm,
 		) );
-		WP_Mock::wpFunction( 'is_wp_error', array(
+		WP_Mock::userFunction( 'is_wp_error', array(
 			'times'  => 1,
 			'args'   => array( $insertTerm ),
 			'return' => false
 		) );
-		WP_Mock::wpFunction( 'wp_set_object_terms', array(
+		WP_Mock::userFunction( 'wp_set_object_terms', array(
 			'times' => 1,
 			'args'  => array( $post->ID, $term_id, $taxonomy ),
 		) );
@@ -185,12 +185,12 @@ class SavePostCallbackTest extends TestCase {
 		) );
 		$taxonomy = 'category';
 
-		WP_Mock::wpFunction( 'get_the_terms', array(
+		WP_Mock::userFunction( 'get_the_terms', array(
 			'times'  => 1,
 			'args'   => array( $post->ID, $taxonomy ),
 			'return' => array(),
 		) );
-		WP_Mock::wpFunction( 'get_term_by', array(
+		WP_Mock::userFunction( 'get_term_by', array(
 			'times'  => 1,
 			'args'   => array( 'slug', $post->post_name, $taxonomy, ARRAY_A ),
 			'return' => false,
@@ -198,17 +198,17 @@ class SavePostCallbackTest extends TestCase {
 		$insert_term = \Mockery::mock( 'WP_Error' );
 		$insert_term->shouldReceive( 'get_error_messages' )
 		            ->once()->andReturn( array( 'Error Message' ) );
-		WP_Mock::wpFunction( 'wp_insert_term', array(
+		WP_Mock::userFunction( 'wp_insert_term', array(
 			'times'  => 1,
 			'args'   => array( $post->post_title, $taxonomy, array( 'slug' => $post->post_name ) ),
 			'return' => $insert_term,
 		) );
-		WP_Mock::wpFunction( 'is_wp_error', array(
+		WP_Mock::userFunction( 'is_wp_error', array(
 			'times'  => 1,
 			'args'   => array( $insert_term ),
 			'return' => true
 		) );
-		WP_Mock::wpFunction( 'wp_set_object_terms', array( 'times' => 0 ) );
+		WP_Mock::userFunction( 'wp_set_object_terms', array( 'times' => 0 ) );
 
 		WP_Mock::onFilter( 'tds_balancing_from_post' )
 		       ->with( false, $post->post_type, $taxonomy, $post )
@@ -232,18 +232,18 @@ class SavePostCallbackTest extends TestCase {
 		) );
 		$taxonomy = 'category';
 
-		WP_Mock::wpFunction( 'get_the_terms', array(
+		WP_Mock::userFunction( 'get_the_terms', array(
 			'times'  => 1,
 			'args'   => array( $post->ID, $taxonomy ),
 			'return' => array(),
 		) );
 		$term = (object) array( 'term_id' => rand( 10, 99 ) );
-		WP_Mock::wpFunction( 'get_term_by', array(
+		WP_Mock::userFunction( 'get_term_by', array(
 			'times'  => 1,
 			'args'   => array( 'slug', $post->post_name, $taxonomy, ARRAY_A ),
 			'return' => $term,
 		) );
-		WP_Mock::wpFunction( 'wp_set_object_terms', array(
+		WP_Mock::userFunction( 'wp_set_object_terms', array(
 			'times' => 1,
 			'args'  => array( $post->ID, $term->term_id, $taxonomy ),
 		) );

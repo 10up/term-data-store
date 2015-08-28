@@ -13,17 +13,17 @@ class GetRelatedPostTest extends TestCase {
 	}
 
 	public function test_get_related_post_noop_when_term_not_object_or_int() {
-		WP_Mock::wpFunction( 'is_wp_error', array( 'return' => false ) );
+		WP_Mock::userFunction( 'is_wp_error', array( 'return' => false ) );
 		$this->assertNull( get_related_post( 'foobar', 'category' ) );
 	}
 
 	public function test_get_related_post_noop_when_term_is_wp_error() {
-		WP_Mock::wpFunction( 'get_term', array(
+		WP_Mock::userFunction( 'get_term', array(
 			'times'  => 1,
 			'args'   => array( 1, 'category' ),
 			'return' => Mockery::mock( 'WP_Error' ),
 		) );
-		WP_Mock::wpFunction( 'is_wp_error', array( 'return' => true ) );
+		WP_Mock::userFunction( 'is_wp_error', array( 'return' => true ) );
 		$this->assertNull( get_related_post( 1, 'category' ) );
 	}
 
@@ -35,7 +35,7 @@ class GetRelatedPostTest extends TestCase {
 			'term_id'  => rand( 1, 9 ),
 			'taxonomy' => 'category',
 		);
-		WP_Mock::wpFunction( 'is_wp_error', array( 'return' => false ) );
+		WP_Mock::userFunction( 'is_wp_error', array( 'return' => false ) );
 		$this->assertNull( get_related_post( $term, $term->taxonomy ) );
 	}
 
@@ -44,7 +44,7 @@ class GetRelatedPostTest extends TestCase {
 			'term_id'  => rand( 1, 9 ),
 			'taxonomy' => 'category',
 		);
-		WP_Mock::wpFunction( 'is_wp_error', array( 'return' => false ) );
+		WP_Mock::userFunction( 'is_wp_error', array( 'return' => false ) );
 		get_relationship( 'post', 'category' );
 		$this->assertNull( get_related_post( $term, $term->taxonomy ) );
 	}
@@ -54,7 +54,7 @@ class GetRelatedPostTest extends TestCase {
 			'term_id'  => rand( 1, 9 ),
 			'taxonomy' => 'category',
 		);
-		WP_Mock::wpFunction( 'is_wp_error', array( 'return' => false ) );
+		WP_Mock::userFunction( 'is_wp_error', array( 'return' => false ) );
 		get_relationship( 'post', 'category' );
 		$posts = array(
 			$this->mockPost( array( 'ID' => rand( 100, 199 ) ) ),
