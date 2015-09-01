@@ -273,13 +273,15 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			if ( apply_filters( 'tds_balancing_from_term', balancing_relationship(), $taxonomy, $post_type, $term_id ) ) {
 				return;
 			}
-			if ( empty( $term_id ) ) {
+
+			if ( empty( $term_id ) || ! ( $term = get_term( $term_id, $taxonomy ) ) ) {
 				return;
 			}
+
 			balancing_relationship( true );
-			$term_objects = get_objects_in_term( $term_id, $taxonomy );
 
 			$create_post = true;
+			$term_objects = get_objects_in_term( $term_id, $taxonomy );
 
 			// Check to see if any of the objects are of our post type
 			if ( ! empty( $term_objects ) ) {
@@ -292,15 +294,16 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			}
 
 			if ( empty( $term_objects ) || $create_post ) {
-				$term    = get_term( $term_id, $taxonomy );
 				$post_id = wp_insert_post( array(
-					'post_type' => $post_type
-				, 'post_title'  => $term->name
-				, 'post_name'   => $term->slug
-				, 'post_status' => 'publish'
+					'post_type'   => $post_type,
+					'post_title'  => $term->name,
+					'post_name'   => $term->slug,
+					'post_status' => 'publish'
 				) );
+
 				wp_set_object_terms( $post_id, $term_id, $taxonomy );
 			}
+
 			balancing_relationship( false );
 		};
 
