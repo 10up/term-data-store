@@ -94,4 +94,27 @@ class AddRelationshipTest extends TestCase {
 		$this->assertEquals( $taxonomy, get_relationship( $post_type ) );
 	}
 
+	public function test_remove_post_or_term() {
+		$post_type = 'post' . rand( 0, 9 );
+		$taxonomy  = 'post_tag' . rand( 0, 9 );
+		WP_Mock::userFunction( 'get_post_type_object', array(
+			'times'  => 1,
+			'args'   => array( $post_type ),
+			'return' => (object) array( 'name' => $post_type ),
+		) );
+		WP_Mock::userFunction( 'get_taxonomy', array(
+			'times'  => 1,
+			'args'   => array( $taxonomy ),
+			'return' => (object) array( 'name' => $taxonomy ),
+		) );
+		WP_Mock::expectActionAdded( 'before_delete_post', get_delete_post_hook( $post_type, $taxonomy ) );
+		WP_Mock::expectActionAdded( "delete_term", get_delete_term_hook( $post_type, $taxonomy ), 10, 4 );
+
+		add_relationship( $post_type, $taxonomy );
+
+		$this->assertConditionsMet();
+		$this->assertEquals( $post_type, get_relationship( $taxonomy ) );
+		$this->assertEquals( $taxonomy, get_relationship( $post_type ) );
+
+	}
 }
