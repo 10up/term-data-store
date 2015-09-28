@@ -75,7 +75,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		add_action( 'create_' . $taxonomy, get_save_term_hook( $post_type, $taxonomy ) );
 		add_action( 'edit_term', get_save_term_hook( $post_type, $taxonomy ) );
 		add_action( 'before_delete_post', get_delete_post_hook( $post_type, $taxonomy ) );
-		add_action( 'delete_term', get_delete_term_hook( $post_type, $taxonomy ), 10, 4 );
+		add_action( 'pre_delete_term', get_delete_term_hook( $post_type, $taxonomy ), 10, 2 );
 
 		get_relationship( $post_type, $taxonomy );
 
@@ -469,7 +469,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	}
 
 	/**
-	 * Returns a closure to be used as the callback hooked to delete_term
+	 * Returns a closure to be used as the callback hooked to pre_delete_term
 	 *
 	 * If balancing_relationship() returns true, this function does nothing.
 	 * Otherwise it will set balancing_relationship to true before starting and back
@@ -483,9 +483,9 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * md5 hash of "$post_type|$taxonomy" to generate the key. If that value exists,
 	 * return it instead of creating a new copy.
 	 *
-	 * The closure that this function generates receives four arguments ($term_id, $tt_id, $deleted_term_taxonomy, and $deleted_term) and
+	 * The closure that this function generates receives two arguments ($deleted_term, $deleted_term_taxonomy ) and
 	 * does the following:
-	 *  If we're able to find a post in the $post_type that has the same slug as the term's slug, that post id deleted
+	 * If we're able to find a object that has the same term id as the deleted term's id, that post id deleted
 	 *
 	 * @uses balancing_relationship()
 	 * @uses wp_delete_post()
@@ -507,23 +507,33 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			return $existing_closures[ $md5 ];
 		}
 
-		$closure = function( $term_id, $tt_id, $deleted_term_taxonomy, $deleted_term ) use ( $post_type, $taxonomy ) {
+		$closure = function( $deleted_term, $deleted_term_taxonomy ) use ( $post_type, $taxonomy ) {
 			global $wpdb;
 
-			if ( apply_filters( 'tds_balancing_from_delete_term', balancing_relationship(), $post_type, $taxonomy, $term_id ) ) {
+			if ( apply_filters( 'tds_balancing_from_delete_term', balancing_relationship(), $post_type, $taxonomy, $deleted_term ) ) {
 				return;
 			}
 
-			if ( empty( $term_id ) || $deleted_term_taxonomy !== $taxonomy ) {
+			if ( empty( $deleted_term ) || $deleted_term_taxonomy !== $taxonomy ) {
 				return;
 			}
 
 			balancing_relationship( true );
 
-			// Since the term is already deleted by this point (there is no such action as before_delete_term) - we are relying on the term slug to match the post slug
-			$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type = %s", $deleted_term->slug, $post_type ) );
+			// Get post id on term deletion.
+			$post_id = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT $wpdb->posts.ID FROM $wpdb->posts
+					INNER JOIN  $wpdb->term_relationships
+					ON $wpdb->term_relationships.object_id = $wpdb->posts.ID
+					WHERE $wpdb->term_relationships.term_taxonomy_id = %d
+					AND $wpdb->posts.post_type = %s",
+					$deleted_term,
+					$post_type
+				)
+			);
 
-			if ( $post_id ) {
+			if ( ! empty( $post_id ) ) {
 				wp_delete_post( $post_id, true );
 			}
 
@@ -534,6 +544,5 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 
 		return $closure;
 	}
-
 
 }
