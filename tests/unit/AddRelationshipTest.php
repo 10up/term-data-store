@@ -108,7 +108,7 @@ class AddRelationshipTest extends TestCase {
 			'return' => (object) array( 'name' => $taxonomy ),
 		) );
 		WP_Mock::expectActionAdded( 'before_delete_post', get_delete_post_hook( $post_type, $taxonomy ) );
-		WP_Mock::expectActionAdded( "delete_term", get_delete_term_hook( $post_type, $taxonomy ), 10, 4 );
+		WP_Mock::expectActionAdded( "pre_delete_term", get_delete_term_hook( $post_type, $taxonomy ), 10, 2 );
 
 		add_relationship( $post_type, $taxonomy );
 
