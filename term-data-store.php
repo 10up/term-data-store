@@ -485,7 +485,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 *
 	 * The closure that this function generates receives two arguments ($deleted_term, $deleted_term_taxonomy ) and
 	 * does the following:
-	 * If we're able to find a object that has the same term id as the deleted term's id, that post id deleted
+	 * If we're able to find a post in $post_type that has the same term id as the deleted term's id and, that post id deleted
 	 *
 	 * @uses balancing_relationship()
 	 * @uses wp_delete_post()
