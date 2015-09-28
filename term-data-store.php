@@ -409,7 +409,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 *
 	 * The closure will receive the post_type and taxonomy values through its use
 	 * statement so that it will have the necessary data to filter out posts created
-	 * for other post types and will know which taxonomy to check and create terms
+	 * for other post types and will know which taxonomy to check and delete terms
 	 * for.
 	 *
 	 * The function stores references to the closures in a static variable using the
@@ -477,7 +477,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 *
 	 * The closure will receive the post_type and taxonomy values through its use
 	 * statement so that it will be aware of which taxonomy the term was created in
-	 * and which post type to create a post for.
+	 * and which post type to delete a post for.
 	 *
 	 * The function stores references to the closures in a static variable using the
 	 * md5 hash of "$post_type|$taxonomy" to generate the key. If that value exists,
@@ -508,7 +508,6 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 		}
 
 		$closure = function( $deleted_term, $deleted_term_taxonomy ) use ( $post_type, $taxonomy ) {
-			global $wpdb;
 
 			if ( apply_filters( 'tds_balancing_from_delete_term', balancing_relationship(), $post_type, $taxonomy, $deleted_term ) ) {
 				return;
@@ -521,19 +520,14 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			balancing_relationship( true );
 
 			// Get post id on term deletion.
-			$post_id = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT $wpdb->posts.ID FROM $wpdb->posts
-					INNER JOIN  $wpdb->term_relationships
-					ON $wpdb->term_relationships.object_id = $wpdb->posts.ID
-					WHERE $wpdb->term_relationships.term_taxonomy_id = %d
-					AND $wpdb->posts.post_type = %s",
-					$deleted_term,
-					$post_type
-				)
-			);
+			$post_id = 0;
+			$post = get_related_post( $deleted_term, $taxonomy );
 
-			if ( ! empty( $post_id ) ) {
+			if ( is_a( $post, 'WP_Post' ) ) {
+				$post_id = $post->ID;
+			}
+
+			if ( 0 !== $post_id ) {
 				wp_delete_post( $post_id, true );
 			}
 
