@@ -75,6 +75,7 @@ class GetRelatedPostTest extends TestCase {
 					'terms'           => $term->term_id
 				) ),
 				'ignore_sticky_posts' => true,
+				'include_children'    => false,
 				'no_found_rows'       => true
 			),
 			\WP_Query::$__instances[0]->__data

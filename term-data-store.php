@@ -357,6 +357,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 				'terms'           => $term->term_id
 			) ),
 			'ignore_sticky_posts' => true,
+			'include_children'    => false,
 			'no_found_rows'       => true
 		) );
 
