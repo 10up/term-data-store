@@ -11,13 +11,13 @@
 namespace TDS;
 
 if ( ! function_exists( '\TDS\add_relationship' ) ) {
-	
+
 	class General_Exception extends \Exception {
 	}
-	
+
 	class Invalid_Input_Exception extends General_Exception {
 	}
-	
+
 	/**
 	 * Sets up a term data storage relationship between a post type and a taxonomy
 	 *
@@ -51,15 +51,15 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @param string $taxonomy  The taxonomy slug
 	 */
 	function add_relationship( $post_type, $taxonomy ) {
-	
+
 		if ( ! get_post_type_object( $post_type ) ) {
 			throw new Invalid_Input_Exception( __FUNCTION__ . '() invalid post_type input.' );
 		}
-	
+
 		if ( ! get_taxonomy( $taxonomy ) ) {
 			throw new Invalid_Input_Exception( __FUNCTION__ . '() invalid taxonomy input.' );
 		}
-	
+
 		$post_type_relationships = get_relationship( $post_type );
 		$taxonomy_relationships  = get_relationship( $taxonomy );
 		if ( ! empty( $post_type_relationships ) && ! empty( $taxonomy_relationships ) ) {
@@ -70,15 +70,17 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			throw new Invalid_Input_Exception( __FUNCTION__ . '() taxonomy already has a relationship.' );
 		}
 		unset( $post_type_relationships, $taxonomy_relationships );
-	
+
 		add_action( 'save_post', get_save_post_hook( $post_type, $taxonomy ), 10, 2 );
 		add_action( 'create_' . $taxonomy, get_save_term_hook( $post_type, $taxonomy ) );
 		add_action( 'edit_term', get_save_term_hook( $post_type, $taxonomy ) );
+		add_action( 'before_delete_post', get_delete_post_hook( $post_type, $taxonomy ) );
+		add_action( 'pre_delete_term', get_delete_term_hook( $post_type, $taxonomy ), 10, 2 );
 
 		get_relationship( $post_type, $taxonomy );
-	
+
 	}
-	
+
 	/**
 	 * Get the name of an object's corresponding type
 	 *
@@ -96,26 +98,26 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @return string|null The corresponding value
 	 */
 	function get_relationship( $for, $set = null ) {
-	
+
 		static $post_type_relationships = array();
-	
+
 		if ( isset( $set ) ) {
 			return $post_type_relationships[$for] = $set;
 		}
-	
+
 		if ( ! empty( $post_type_relationships[$for] ) ) {
 			return $post_type_relationships[$for];
 		}
-	
+
 		$search = array_search( $for, $post_type_relationships );
 		if ( ! empty( $search ) ) {
 			return $search;
 		}
-	
+
 		return null;
-	
+
 	}
-	
+
 	/**
 	 * Returns a boolean to indicate whether a relationship is currently being balanced
 	 *
@@ -131,17 +133,17 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @return bool Whether a relationship is currently being balanced
 	 */
 	function balancing_relationship() {
-	
+
 		static $balancing_status = false;
-	
+
 		if ( func_num_args() ) {
 			$balancing_status = (boolean) func_get_arg( 0 );
 		}
-	
+
 		return $balancing_status;
-	
+
 	}
-	
+
 	/**
 	 * Returns a closure to be used as the callback hooked to save_post
 	 *
@@ -176,12 +178,12 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @return \Closure The callback
 	 */
 	function get_save_post_hook( $post_type, $taxonomy ) {
-	
+
 		static $existing_closures;
 		if ( ! isset( $existing_closures ) ) {
 			$existing_closures = array();
 		}
-	
+
 		$md5 = md5( $post_type . '|' . $taxonomy );
 		if ( isset( $existing_closures[$md5] ) ) {
 			return $existing_closures[$md5];
@@ -201,7 +203,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			} else {
 				$term = get_term_by( 'slug', $post->post_name, $taxonomy, ARRAY_A );
 			}
-		
+
 			if( !$term )
 			{
 				$term = wp_insert_term( $post->post_title, $taxonomy, array( 'slug' => $post->post_name ) );
@@ -209,20 +211,20 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 					throw new General_Exception( 'Error creating a term: ' . implode( ', ', $term->get_error_messages() ) . ' Slug: ' . $post->post_name . ' / Title: ' . $post->post_title );
 				}
 			}
-			
+
 			if( is_object( $term ) ) {
 				$term = (array) $term;
 			}
-			
+
 			wp_set_object_terms( $post->ID, (int) $term['term_id'], $taxonomy );
 			balancing_relationship( false );
 		};
-	
+
 		$existing_closures[$md5] = $closure;
 		return $closure;
-	
+
 	}
-	
+
 	/**
 	 * Returns a closure to be used as the callback hooked to save_post
 	 *
@@ -258,17 +260,17 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @return \Closure The callback
 	 */
 	function get_save_term_hook( $post_type, $taxonomy ) {
-	
+
 		static $existing_closures;
 		if ( ! isset( $existing_closures ) ) {
 			$existing_closures = array();
 		}
-	
+
 		$md5 = md5( $post_type . '|' . $taxonomy );
 		if ( isset( $existing_closures[$md5] ) ) {
 			return $existing_closures[$md5];
 		}
-	
+
 		$closure = function ( $term_id ) use ( $post_type, $taxonomy ) {
 			if ( apply_filters( 'tds_balancing_from_term', balancing_relationship(), $taxonomy, $post_type, $term_id ) ) {
 				return;
@@ -303,10 +305,10 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 			}
 			balancing_relationship( false );
 		};
-	
+
 		$existing_closures[$md5] = $closure;
 		return $closure;
-	
+
 	}
 
 	/**
@@ -328,7 +330,7 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @return \WP_Post|null
 	 */
 	function get_related_post( $term, $taxonomy = null ) {
-	
+
 		if ( is_int( $term ) ) {
 			if ( ! empty( $taxonomy ) ) {
 				$term = get_term( $term, $taxonomy );
@@ -336,30 +338,32 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 				return null;
 			}
 		}
-	
+
 		if ( is_wp_error( $term ) || ! is_object( $term ) ) {
 			return null;
 		}
-	
+
 		$post_type = get_relationship( $term->taxonomy );
-		if ( ! empty( $post_type ) ) {
-			$posts = new \WP_Query( array(
-				'post_type'           => $post_type,
-				'posts_per_page'      => 1,
-				'tax_query'           => array( array(
-					'taxonomy'        => $term->taxonomy,
-					'field'           => 'id',
-					'terms'           => $term->term_id
-				) ),
-				'ignore_sticky_posts' => true,
-				'include_children'    => false,
-				'no_found_rows'       => true
-			) );
+		if ( empty( $post_type ) ) {
+			return null;
 		}
+
+		$posts = new \WP_Query( array(
+			'post_type'           => $post_type,
+			'posts_per_page'      => 1,
+			'tax_query'           => array( array(
+				'taxonomy'        => $term->taxonomy,
+				'field'           => 'id',
+				'terms'           => $term->term_id
+			) ),
+			'ignore_sticky_posts' => true,
+			'include_children'    => false,
+			'no_found_rows'       => true
+		) );
 
 		return $posts->post_count == 0 ? null : $posts->post;
 	}
-	
+
 	/**
 	 * Takes a post object (or ID) and returns a term object related to it
 	 *
@@ -377,24 +381,163 @@ if ( ! function_exists( '\TDS\add_relationship' ) ) {
 	 * @return object|null
 	 */
 	function get_related_term( $post ) {
-	
+
 		$post = get_post( $post );
 		if ( empty( $post ) ) {
 			return;
 		}
-	
+
 	    $terms = get_the_terms( $post->ID, get_relationship( $post->post_type ) );
-	
+
 		if ( is_wp_error( $terms ) || ! $terms ) {
 			return null;
 		}
-	
+
 		if ( is_array( $terms ) && count( $terms ) > 0 ) {
 			return reset( $terms );
 		}
-	
+
 		return null;
-	
+
+	}
+
+	/**
+	 * Returns a closure to be used as the callback hooked to before_delete_post
+	 *
+	 * If balancing_relationship() returns true, this function does nothing.
+	 * Otherwise it will set balancing_relationship to true before starting and back
+	 * to false at the end of the function.
+	 *
+	 * The closure will receive the post_type and taxonomy values through its use
+	 * statement so that it will have the necessary data to filter out posts created
+	 * for other post types and will know which taxonomy to check and delete terms
+	 * for.
+	 *
+	 * The function stores references to the closures in a static variable using the
+	 * md5 hash of "$post_type|$taxonomy" to generate the key. If that value exists,
+	 * return it instead of creating a new copy.
+	 *
+	 * The closure that this function generates receives one argument ($post_id) and does the following:
+	 *   If able to find a post for the $post_id, and the $post->post_type is $post_type and get_related_term returns a term
+	 *   then delete that term.
+	 *
+	 * @uses balancing_relationship()
+	 * @uses get_related_term()
+	 * @uses wp_delete_term()
+	 *
+	 * @param string $post_type
+	 * @param string $taxonomy
+	 *
+	 * @return \Closure The callback
+	 */
+	function get_delete_post_hook( $post_type, $taxonomy ) {
+
+		static $existing_closures;
+		if ( ! isset( $existing_closures ) ) {
+			$existing_closures = array();
+		}
+
+		$md5 = md5( $post_type . '|' . $taxonomy );
+		if ( isset( $existing_closures[ $md5 ] ) ) {
+			return $existing_closures[ $md5 ];
+		}
+
+		$closure = function( $post_id ) use ( $post_type, $taxonomy ) {
+			if ( apply_filters( 'tds_balancing_from_delete_post', balancing_relationship(), $post_type, $taxonomy, $post_id ) ) {
+				return;
+			}
+
+			$post = get_post( $post_id );
+
+			if ( empty( $post ) || $post_type !== $post->post_type ) {
+				return;
+			}
+
+			balancing_relationship( true );
+
+			$term = get_related_term( $post );
+
+			if ( $term ) {
+				wp_delete_term( $term->term_id, $taxonomy );
+			}
+
+			balancing_relationship( false );
+		};
+
+		$existing_closures[ $md5 ] = $closure;
+
+		return $closure;
+	}
+
+	/**
+	 * Returns a closure to be used as the callback hooked to pre_delete_term
+	 *
+	 * If balancing_relationship() returns true, this function does nothing.
+	 * Otherwise it will set balancing_relationship to true before starting and back
+	 * to false at the end of the function.
+	 *
+	 * The closure will receive the post_type and taxonomy values through its use
+	 * statement so that it will be aware of which taxonomy the term was created in
+	 * and which post type to delete a post for.
+	 *
+	 * The function stores references to the closures in a static variable using the
+	 * md5 hash of "$post_type|$taxonomy" to generate the key. If that value exists,
+	 * return it instead of creating a new copy.
+	 *
+	 * The closure that this function generates receives two arguments ($deleted_term, $deleted_term_taxonomy ) and
+	 * does the following:
+	 * If we're able to find a post in $post_type that has the same term id as the deleted term's id and, that post id deleted
+	 *
+	 * @uses balancing_relationship()
+	 * @uses wp_delete_post()
+	 *
+	 * @param string $post_type
+	 * @param string $taxonomy
+	 *
+	 * @return \Closure The callback
+	 */
+	function get_delete_term_hook( $post_type, $taxonomy ) {
+
+		static $existing_closures;
+		if ( ! isset( $existing_closures ) ) {
+			$existing_closures = array();
+		}
+
+		$md5 = md5( $post_type . '|' . $taxonomy );
+		if ( isset( $existing_closures[ $md5 ] ) ) {
+			return $existing_closures[ $md5 ];
+		}
+
+		$closure = function( $deleted_term, $deleted_term_taxonomy ) use ( $post_type, $taxonomy ) {
+
+			if ( apply_filters( 'tds_balancing_from_delete_term', balancing_relationship(), $post_type, $taxonomy, $deleted_term ) ) {
+				return;
+			}
+
+			if ( empty( $deleted_term ) || $deleted_term_taxonomy !== $taxonomy ) {
+				return;
+			}
+
+			balancing_relationship( true );
+
+			// Get post id on term deletion.
+			$post_id = 0;
+			$post = get_related_post( $deleted_term, $taxonomy );
+
+			if ( is_a( $post, 'WP_Post' ) ) {
+				$post_id = $post->ID;
+			}
+
+			if ( 0 !== $post_id ) {
+				wp_delete_post( $post_id, true );
+			}
+
+			balancing_relationship( false );
+		};
+
+		$existing_closures[ $md5 ] = $closure;
+
+		return $closure;
 	}
 
 }
