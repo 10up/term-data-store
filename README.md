@@ -8,7 +8,7 @@ Create a one-to-one relationships between posts and terms and keep them in sync.
 ### 1. Register a custom post type:
 
 ```php
-$post_type_name    = 'book';
+$post_type_name    = 'show_pt';
 $post_type_options = array();
 
 register_post_type(
@@ -19,7 +19,7 @@ register_post_type(
 ### 2. Register a taxonomy:
 
 ```php
-$taxonomy_name      = 'genre';
+$taxonomy_name      = 'show_tax';
 $taxonomy_options   = array();
 $post_types         = array( 'post' );
 
@@ -33,6 +33,10 @@ register_taxonomy(
 ```php
 \TDS\add_relationship( $post_type_name, $taxonomy_name );
 ```
+
+### 4. Create a post or term:
+
+Creating a post named "The Tick" in the post type will create a corresponding term named "The Tick" in the taxonomy. The reverse will happen if you create a term in the taxonomy.
 
 ## Unit Tests
 
