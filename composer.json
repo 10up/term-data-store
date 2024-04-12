@@ -22,5 +22,6 @@
             "TDS\\Tools\\": "tests/Tools"
         },
         "classmap": ["tests/mocks"]
-    }
+    },
+    "abandoned": true
 }
